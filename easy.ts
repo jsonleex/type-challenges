@@ -16,7 +16,7 @@ export type MyPick<T, K extends keyof T> = {
   [P in K]: T[P]
 }
 
-export type MyPickCase = [
+export type MyPickCases = [
   Expect<Equal<Pick<Todo, 'title'>, MyPick<Todo, 'title'>>>,
   Expect<Equal<Pick<Todo, 'title' | 'completed'>, MyPick<Todo, 'title' | 'completed'>>>,
 
@@ -30,7 +30,7 @@ export type MyReadonly<T> = {
   readonly [P in keyof T]: T[P]
 }
 
-export type MyReadonlyCase = [Expect<Equal<Readonly<Todo>, MyReadonly<Todo>>>]
+export type MyReadonlyCases = [Expect<Equal<Readonly<Todo>, MyReadonly<Todo>>>]
 
 // ========== 3. Tuple to Enum Object ==========
 
@@ -38,7 +38,7 @@ export type TupleToObject<T extends readonly (number | string)[]> = {
   [P in T[number]]: P
 }
 
-export type TupleToObjectCase = [
+export type TupleToObjectCases = [
   Expect<Equal<TupleToObject<[]>, {}>>,
   Expect<Equal<TupleToObject<[1, 'b', 'c']>, { 1: 1; b: 'b'; c: 'c' }>>,
 
@@ -50,7 +50,7 @@ export type TupleToObjectCase = [
 
 export type First<T extends unknown[]> = T extends [infer R, ...any[]] ? R : never
 
-export type FirstCase = [
+export type FirstCases = [
   Expect<Equal<First<[]>, never>>,
   Expect<Equal<First<[1, 2, 3]>, 1>>,
   Expect<Equal<First<[undefined]>, undefined>>,
@@ -65,7 +65,7 @@ export type FirstCase = [
 
 export type Length<T extends unknown[]> = T extends { length: infer R } ? R : never
 
-export type LengthCase = [
+export type LengthCases = [
   Expect<Equal<Length<[]>, 0>>,
   Expect<Equal<Length<[1, '2', () => {}]>, 3>>,
 
@@ -77,7 +77,7 @@ export type LengthCase = [
 
 export type MyExclude<T, U extends T> = T extends U ? never : T
 
-export type MyExcludeCase = [
+export type MyExcludeCases = [
   Expect<Equal<MyExclude<keyof Todo, 'meta'>, Exclude<keyof Todo, 'meta'>>>,
   Expect<Equal<MyExclude<keyof Todo, 'meta' | 'title'>, Exclude<keyof Todo, 'meta' | 'title'>>>,
 
@@ -107,7 +107,7 @@ const thenable = {
   },
 } as const
 
-export type MyAwaitedCase = [
+export type MyAwaitedCases = [
   // 7.1.
   Expect<Equal<MyAwaited<Promise<string>>, Awaited<Promise<string>>>>,
   Expect<Equal<MyAwaited<Promise<Promise<string>>>, Awaited<Promise<Promise<string>>>>>,
@@ -121,7 +121,7 @@ export type MyAwaitedCase = [
 
 export type If<C extends boolean, A, B> = C extends true ? A : B
 
-export type IfCase = [
+export type IfCases = [
   Expect<Equal<If<true, 1, 2>, 1>>,
   Expect<Equal<If<false, 1, 2>, 2>>,
 
@@ -133,7 +133,7 @@ export type IfCase = [
 
 export type Concat<T extends unknown[], U extends unknown[]> = [...T, ...U]
 
-export type ConcatCase = [
+export type ConcatCases = [
   Expect<Equal<Concat<[1], [2]>, [1, 2]>>,
   Expect<Equal<Concat<[1], [boolean]>, [1, boolean]>>,
   Expect<Equal<Concat<[1], [() => {}]>, [1, () => {}]>>,
@@ -145,7 +145,7 @@ export type Includes<T extends unknown[], U> = T extends [infer First, ...infer 
   ? (Equal<First, U> extends true ? true : Includes<Rest, U>)
   : false
 
-export type IncludesCase = [
+export type IncludesCases = [
   Expect<Equal<Includes<[1, 2, 3], 1>, true>>,
   Expect<Equal<Includes<[1, 2, 3], 3>, true>>,
   Expect<Equal<Includes<[1, 2, 3], 4>, false>>,
@@ -162,7 +162,7 @@ export type IncludesCase = [
 
 export type Push<T extends unknown[], U> = [...T, U]
 
-export type PushCase = [
+export type PushCases = [
   Expect<Equal<Push<[], 1>, [1]>>,
   Expect<Equal<Push<[1, 2], 3>, [1, 2, 3]>>,
 ]
@@ -171,7 +171,7 @@ export type PushCase = [
 
 export type UnShift<T extends unknown[], U> = [U, ...T]
 
-export type UnShiftCase = [
+export type UnShiftCases = [
   Expect<Equal<UnShift<[], 1>, [1]>>,
   Expect<Equal<UnShift<[1, 2], 3>, [3, 1, 2]>>,
 ]
@@ -180,7 +180,7 @@ export type UnShiftCase = [
 
 export type Parameters<T extends Function> = T extends (...args: infer R) => unknown ? R : never
 
-export type ParametersCase = [
+export type ParametersCases = [
   Expect<Equal<Parameters<() => void>, []>>,
   Expect<Equal<Parameters<(a: string) => void>, [string]>>,
   Expect<Equal<Parameters<(a: string, b: number) => void>, [string, number]>>,
