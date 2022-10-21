@@ -1,5 +1,5 @@
 import type { Alike, Equal, Expect, MergeInsertions } from '@type-challenges/utils'
-import type { Length } from './easy'
+import type { Includes, Length } from './easy'
 // import type { MyExclude } from './easy'
 
 interface Todo {
@@ -201,7 +201,7 @@ export type TrimLeftCases = [
   Expect<Equal<TrimLeft<'  str '>, 'str '>>,
 ]
 
-// ========== 12 Trim Right ==========
+// ========== 12. Trim Right ==========
 
 export type TrimRight<S extends string> = S extends `${infer F}${Space}` ? TrimRight<F> : S
 
@@ -391,13 +391,13 @@ export type AbsoluteCases = [
 
 // ========== 23. String to Union ==========
 
-export type StringToUnion<S extends string> = S extends `${infer Head}${infer Rest}` ? (Head | StringToUnion<Rest>) : never
+export type StringToUnion<S> = S extends `${infer Head}${infer Rest}` ? Head | StringToUnion<Rest> : S
 
 export type StringToUnionCase = [
-  Expect<Equal<StringToUnion<''>, never>>,
-  Expect<Equal<StringToUnion<'t'>, 't'>>,
-  Expect<Equal<StringToUnion<'hello'>, 'h' | 'e' | 'l' | 'l' | 'o'>>,
-  Expect<Equal<StringToUnion<'coronavirus'>, 'c' | 'o' | 'r' | 'o' | 'n' | 'a' | 'v' | 'i' | 'r' | 'u' | 's'>>,
+  Expect<Equal<StringToUnion<''>, ''>>,
+  Expect<Equal<StringToUnion<'t'>, 't' | ''>>,
+  Expect<Equal<StringToUnion<'hello'>, 'h' | 'e' | 'l' | 'l' | 'o' | ''>>,
+  Expect<Equal<StringToUnion<'coronavirus'>, 'c' | 'o' | 'r' | 'o' | 'n' | 'a' | 'v' | 'i' | 'r' | 'u' | 's' | ''>>,
 ]
 
 // ========== 24. Merge ==========
@@ -801,3 +801,373 @@ export type FlattenDepthCases = [
   Expect<Equal<FlattenDepth<[1, [2, [3, [4, [5]]]]], 3>, [1, 2, 3, 4, [5]]>>,
   Expect<Equal<FlattenDepth<[1, [2, [3, [4, [5]]]]], 19260817>, [1, 2, 3, 4, 5]>>,
 ]
+
+// ========== 48. BEM style string ==========
+
+type Prefix<S extends string, A extends string> = [S] extends [never]
+  ? ''
+  : S extends ''
+    ? S
+    : A extends ''
+      ? S
+      : `${A}${S}`
+
+export type BEM<B extends string, E extends string[], M extends string[]> = `${B}${Prefix<E[number], '__'>}${Prefix<M[number], '--'>}`
+
+export type BEMCases = [
+  Expect<Equal<BEM<'B', ['E'], ['M']>, 'B__E--M'>>,
+  Expect<Equal<BEM<'B', ['E'], []>, 'B__E'>>,
+  Expect<Equal<BEM<'B', [], ['M']>, 'B--M'>>,
+  Expect<Equal<BEM<'B', ['E1', 'E2'], ['M']>, 'B__E1--M' | 'B__E2--M'>>,
+  Expect<Equal<BEM<'B', ['E1', 'E2'], ['M1', 'M2']>, 'B__E1--M1' | 'B__E1--M2' | 'B__E2--M1' | 'B__E2--M2'>>,
+]
+
+// ========== 49. Inorder Tree Traversal ==========
+
+interface TreeNode {
+  value: number
+  left: TreeNode | null
+  right: TreeNode | null
+}
+
+export type InorderTraversal<T extends TreeNode | null> = [T] extends [TreeNode]
+  ? [...InorderTraversal<T['left']>, T['value'], ...InorderTraversal<T['right']>]
+  : []
+
+const tree1 = {
+  value: 1,
+  left: null,
+  right: {
+    value: 2,
+    left: {
+      value: 3,
+      left: {
+        value: 4,
+        left: null,
+        right: {
+          value: 5,
+          left: null,
+          right: null,
+        },
+      },
+      right: null,
+    },
+    right: null,
+  },
+} as const
+
+export type InorderTraversalCases = [
+  Expect<Equal<InorderTraversal<null>, []>>,
+  Expect<Equal<InorderTraversal<typeof tree1>, [1, 4, 5, 3, 2]>>,
+]
+
+// ========== 50. Flip Object ==========
+
+export type FlipObject<T extends Record<PropertyKey, string | boolean | number>> = {
+  [K in keyof T as `${T[K]}`]: K extends `${infer B extends boolean}` ? B : K
+}
+
+export type FlipObjectCase = [
+  Expect<Equal<FlipObject<{ a: 1; b: 2 }>, { 1: 'a'; 2: 'b' }>>,
+  Expect<Equal<FlipObject<{ a: true; false: 2 }>, { true: 'a'; 2: false }>>,
+]
+
+// ========== 51. Fibonacci Sequence ==========
+
+export type Fibonacci<T extends number, N1 extends number[] = [], N2 extends number[] = [number], R extends number[] = [number]> =
+  T extends 0
+    ? never
+    : R extends { length: T }
+      ? N2['length']
+      : Fibonacci<T, N2, [...N1, ...N2], [...R, number]>
+
+export type FibonacciCases = [
+  Expect<Equal<Fibonacci<1>, 1>>,
+  Expect<Equal<Fibonacci<2>, 1>>,
+  Expect<Equal<Fibonacci<3>, 2>>,
+  Expect<Equal<Fibonacci<8>, 21>>,
+]
+
+// function fibonacci(n = 1, a = 0, b = 1, c = 1): number {
+//   if (n < 1)
+//     throw new RangeError('Input must be a positive integer')
+
+//   return c === n ? b : fibonacci(n, b, a + b, c + 1)
+// }
+
+// ========== 52. String All Combinations ==========
+
+// type StringCombinations<U extends string, I extends string = U> = I extends I
+//   ? I | `${I}${StringCombinations<Exclude<U, I>>}`
+//   : never
+
+// export type StringAllCombinations<S extends string> = '' | StringCombinations<StringToUnion<S>>
+
+export type StringAllCombinations<S extends string, U extends string = StringToUnion<S>, I extends string = U> =
+  S extends `${string}${infer R}`
+    ? I extends I
+      ? `${I}${StringAllCombinations<R, I extends '' ? U : Exclude<U, I>>}`
+      : never
+    : ''
+
+export type StringPermutationCases = [
+  Expect<Equal<StringAllCombinations<''>, ''>>,
+  Expect<Equal<StringAllCombinations<'a'>, '' | 'a'>>,
+  Expect<Equal<StringAllCombinations<'ab'>, '' | 'a' | 'ab' | 'b' | 'ba'>>,
+  Expect<Equal<StringAllCombinations<'abc'>, '' | 'a' | 'b' | 'c' | 'ab' | 'ac' | 'bc' | 'ba' | 'bc' | 'ca' | 'cb' | 'abc' | 'acb' | 'bac' | 'bca' | 'cab' | 'cba'>>,
+]
+
+// function stringAllCombinations(str: string) {
+//   const result: string[] = []
+//   const tuple: string[] = str.split('')
+
+//   let head: string | undefined = ''
+
+//   while (head) {
+//     tuple.forEach(s => result.push(`${head}${s}`))
+//     head = tuple.pop()
+//   }
+
+//   return result
+// }
+
+// ========== 53. Greater Than ==========
+
+export type GreaterThan<A extends number, B extends number, R extends number[] = []> =
+  R extends { length: A }
+    ? false
+    : R extends { length: B }
+      ? true
+      : GreaterThan<A, B, [...R, number]>
+
+export type GreaterThanCases = [
+  Expect<Equal<GreaterThan<1, 0>, true>>,
+  Expect<Equal<GreaterThan<1, 1>, false>>,
+  Expect<Equal<GreaterThan<1, 2>, false>>,
+  // https://github.com/type-challenges/type-challenges/issues/4875#issue-1069016517
+  // Expect<Equal<GreaterThan<1210000000000110, 1192100607010116>, true>>,
+]
+
+// ========== 54. Zip ==========
+
+export type Zip<T extends unknown[], U extends unknown[], R extends unknown[] = []> =
+  T extends [infer T1, ...infer TR]
+    ? U extends [infer U1, ...infer UR]
+      ? Zip<TR, UR, [...R, [T1, U1]]>
+      : R
+    : R
+
+export type ZipCases = [
+  Expect<Equal<Zip<[], []>, []>>,
+  Expect<Equal<Zip<[1], ['a']>, [[1, 'a']]>>,
+  Expect<Equal<Zip<[1, 2], ['a']>, [[1, 'a']]>>,
+  Expect<Equal<Zip<[1, 2], ['a', 'b']>, [[1, 'a'], [2, 'b']]>>,
+  Expect<Equal<Zip<[1], ['a', 'b']>, [[1, 'a']]>>,
+]
+
+// function zip(a: unknown[], b: unknown[], result: [unknown, unknown][]): [unknown, unknown][] {
+//   return a.length === 0 || b.length === 0 ? result : zip(a, b, [...result, [a.shift(), b.shift()]])
+// }
+
+// ========== 55. IsTuple ==========
+
+export type IsTuple<T> =
+  [T] extends [never]
+    ? false
+    : T extends readonly unknown[]
+      ? number extends T['length']
+        ? false
+        : true
+      : false
+
+export type IsTupleCases = [
+  Expect<Equal<IsTuple<[]>, true>>,
+  Expect<Equal<IsTuple<[number]>, true>>,
+  Expect<Equal<IsTuple<readonly [1]>, true>>,
+  Expect<Equal<IsTuple<{ length: 1 }>, false>>,
+  Expect<Equal<IsTuple<number[]>, false>>,
+  Expect<Equal<IsTuple<never>, false>>,
+]
+
+// ========== 56. Chunk ==========
+
+export type Chunk<T extends readonly unknown[], U = 0, R extends unknown[] = []> =
+  U extends 0
+    ? []
+    : R extends { length: U }
+      ? [R, ...Chunk<T, U, []>]
+      : T extends [infer T1, ...infer TR]
+        ? Chunk<TR, U, [...R, T1]>
+        : R extends { length: 0 }
+          ? []
+          : [R]
+
+export type ChunkCases = [
+  Expect<Equal<Chunk<[], 0>, []>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 7>, [[1, 2, 3, 4, 5, 6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 6>, [[1, 2, 3, 4, 5, 6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 5>, [[1, 2, 3, 4, 5], [6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 4>, [[1, 2, 3, 4], [5, 6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 3>, [[1, 2, 3], [4, 5, 6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 2>, [[1, 2], [3, 4], [5, 6]]>>,
+  Expect<Equal<Chunk<[1, 2, 3, 4, 5, 6], 1>, [[1], [2], [3], [4], [5], [6]]>>,
+]
+
+// ========== 57. Fill ==========
+
+export type Fill<T extends unknown[], N, Start = 0, End = T['length'], U extends number[] = [], M = false> =
+  T extends [infer H, ...infer R]
+    ? U extends { length: End }
+      ? T
+      : U extends { length: Start }
+        ? [N, ...Fill<R, N, Start, End, [...U, number], true>]
+        : M extends true
+          ? [N, ...Fill<R, N, Start, End, [...U, number], true>]
+          : [H, ...Fill<R, N, Start, End, [...U, number], false>]
+    : []
+
+export type FillCases = [
+  Expect<Equal<Fill<[], 0>, []>>,
+  Expect<Equal<Fill<[1, 2, 3, 4], 0>, [0, 0, 0, 0]>>,
+  Expect<Equal<Fill<[1, 2, 3, 4], 0, 1>, [1, 0, 0, 0]>>,
+  Expect<Equal<Fill<[1, 2, 3, 4], 0, 1, 2>, [1, 0, 3, 4]>>,
+]
+
+// ========== 58. WithOut ==========
+
+export type WithOut<T extends unknown[], U extends unknown[]> =
+  T extends [infer H, ...infer R]
+    ? H extends U[number]
+      ? WithOut<R, U>
+      : [H, ...WithOut<R, U>]
+    : T
+
+export type WithOutCases = [
+  Expect<Equal<WithOut<[1, 2, 3, 4], []>, [1, 2, 3, 4]>>,
+  Expect<Equal<WithOut<[1, 2, 3, 4], [1]>, [2, 3, 4]>>,
+  Expect<Equal<WithOut<[1, 2, 3, 4], [1, 4]>, [2, 3]>>,
+]
+
+// ========== 59. Math.trunc ==========
+
+export type Trunc<T extends string | number> = `${T}` extends `${infer N}.${string}` ? N : `${T}`
+
+export type TruncCases = [
+  Expect<Equal<Trunc<0.1>, '0'>>,
+  Expect<Equal<Trunc<1.1>, '1'>>,
+  Expect<Equal<Trunc<123.1>, '123'>>,
+  Expect<Equal<Trunc<-123.1>, '-123'>>,
+  Expect<Equal<Trunc<'123.1'>, '123'>>,
+  Expect<Equal<Trunc<'-123.1'>, '-123'>>,
+]
+
+// ========== 60. IndexOf ==========
+
+export type IndexOf<T extends unknown[], U, N extends number[] = []> =
+  T extends [infer H, ...infer R]
+    ? Equal<H, U> extends true
+      ? N['length']
+      : IndexOf<R, U, [...N, number]>
+    : -1
+
+export type IndexOfCases = [
+  Expect<Equal<IndexOf<[1, 2], 1>, 0>>,
+  Expect<Equal<IndexOf<[1, 1], 1>, 0>>,
+  Expect<Equal<IndexOf<[1, 2, 3, 4], 2>, 1>>,
+  Expect<Equal<IndexOf<[1, 2, 3, 4], 6>, -1>>,
+  Expect<Equal<IndexOf<[string, 1, number, 'a'], number>, 2>>,
+]
+
+// ========== 61. Join ==========
+
+export type Join<T extends (string | number)[], U extends string | number> =
+  T extends [infer H extends string | number, ...infer R extends (string | number)[]]
+    ? R extends { length: 0 }
+      ? `${H}`
+      : `${H}${U}${Join<R, U>}`
+    : ''
+
+export type JoinCases = [
+  Expect<Equal<Join<[], 1>, ''>>,
+  Expect<Equal<Join<[1, 2, 3], 1>, '11213'>>,
+  Expect<Equal<Join<[1, 2, 3], '-'>, '1-2-3'>>,
+]
+
+// ========== 63. LastIndexOf ==========
+
+export type LastIndexOf<T extends unknown[], U> =
+  T extends [...infer L, infer R]
+    ? Equal<R, U> extends true
+      ? L['length']
+      : LastIndexOf<L, U>
+    : -1
+
+export type LastIndexOfCases = [
+  Expect<Equal<LastIndexOf<[1, 2, 3], 1>, 0>>,
+  Expect<Equal<LastIndexOf<[1, 2, 1], 1>, 2>>,
+]
+
+// ========== 64. Unique ==========
+
+export type Unique<T extends unknown[], U extends unknown[] = []> =
+  T extends [infer H, ...infer R]
+    ? Includes<U, H> extends true
+      ? Unique<R, U>
+      : Unique<R, [...U, H]>
+    : U
+
+export type UniqueCases = [
+  Expect<Equal<Unique<[]>, []>>,
+  Expect<Equal<Unique<[1, 1, 2, 2, 3, 3]>, [1, 2, 3]>>,
+  Expect<Equal<Unique<[1, 2, 3, 4, 4, 5, 6, 7]>, [1, 2, 3, 4, 5, 6, 7]>>,
+  Expect<Equal<Unique<[1, 'a', 2, 'b', 2, 'a']>, [1, 'a', 2, 'b']>>,
+  Expect<Equal<Unique<[string, number, 1, 'a', 1, string, 2, 'b', 2, number]>, [string, number, 1, 'a', 2, 'b']>>,
+  Expect<Equal<Unique<[unknown, unknown, any, any, never, never]>, [unknown, any, never]>>,
+]
+
+// ========== 65. MapTypes ==========
+
+interface MapConf {
+  from: unknown
+  to: unknown
+}
+
+type GetMapType<
+  T,
+  U extends MapConf,
+  R = U extends U
+    ? Equal<T, U['from']> extends true
+      ? U['to']
+      : never
+    : never,
+> = [R] extends [never] ? T : R
+
+export type MapTypes<T extends object, U extends MapConf> = {
+  [K in keyof T]: GetMapType<T[K], U>
+}
+
+export type MapTypesCases = [
+  Expect<Equal<MapTypes<{}, { from: number; to: string }>, {}>>,
+  Expect<Equal<MapTypes<{ a: number }, { from: number; to: string }>, { a: string }>>,
+  Expect<Equal<MapTypes<{ a: number; b: string }, { from: number; to: string }>, { a: string; b: string }>>,
+  Expect<Equal<MapTypes<{ a: number; b: string }, { from: number; to: string } | { from: string; to: [] }>, { a: string; b: [] }>>,
+]
+
+// ========== 66. Construct Tuple ==========
+
+// ========== 67. Number Range ==========
+
+export type NumberRange<
+  L extends number,
+  H extends number,
+  Idx extends 1[] = L extends 0 ? [] : [1, 1],
+  Res = never,
+> =
+  Idx['length'] extends H
+    ? H | Res
+    : NumberRange<L, H, [...Idx, 1], Idx['length'] | Res>
+
+// ========== 68. Combination ==========
+
+// ========== 69. Subsequence ==========
+
